@@ -1,0 +1,84 @@
+{
+  "title": "soulinX: Credit-Based A2A Lending on X Layer",
+  "tagline": "Your reputation is your oracle",
+  "chain": "X Layer (Chain 196)",
+  "pool_contract": "0xBCae727ABBD3f4237894268deF39E2Ce66376DC5",
+  "soulink_registry": "0x15d13ed36b337dff3d5877ed46655037ee4c1be0",
+
+  "agents": [
+    { "name": "alice.agent", "credit": 85, "collateral_pct": 20, "interest_pct": 2, "max_loan": 100, "role": "Premium borrower" },
+    { "name": "bob.agent", "credit": 55, "collateral_pct": 100, "interest_pct": 10, "max_loan": 20, "role": "Risky borrower" },
+    { "name": "charlie.agent", "credit": 15, "collateral_pct": null, "interest_pct": null, "max_loan": 0, "role": "Rejected" },
+    { "name": "lender.agent", "credit": 50, "role": "Depositor" }
+  ],
+
+  "acts": [
+    {
+      "id": 1,
+      "title": "THE CREDIT GATE",
+      "description": "Same protocol, completely different terms based on reputation",
+      "events": [
+        { "agent": "alice.agent", "action": "check_terms", "result": "eligible", "credit": 85, "collateral": "20%", "interest": "2%" },
+        { "agent": "bob.agent", "action": "check_terms", "result": "eligible", "credit": 55, "collateral": "100%", "interest": "10%" },
+        { "agent": "charlie.agent", "action": "check_terms", "result": "rejected", "credit": 15, "reason": "Credit too low" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "LENDER DEPOSITS (x402)",
+      "description": "x402 payment protocol in action",
+      "events": [
+        { "agent": "lender.agent", "action": "deposit", "amount": "1 USDG", "protocol": "x402",
+          "x402_flow": ["402 Payment Required", "Signing USDG payment on X Layer...", "Payment signed. Retrying with proof...", "Deposited!"],
+          "tx": "0xb10959a8..." }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "ALICE REPAYS",
+      "description": "Good agents pay on time, credit improves",
+      "events": [
+        { "agent": "alice.agent", "action": "repay", "amount": "1.02 USDG", "interest": "2%",
+          "steps": ["Approve USDG to pool contract", "Call repay() on contract", "OKB collateral auto-returned"],
+          "tx_approve": "0x15e4ddf4...", "tx_repay": "0xdffa0879...",
+          "credit_before": 80, "credit_after": 80, "result": "Credit maintained/improved" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "CHARLIE REJECTED",
+      "description": "Low credit agents cannot borrow",
+      "events": [
+        { "agent": "charlie.agent", "action": "try_borrow", "result": "rejected", "credit": 15, "minimum": 50,
+          "message": "Build your reputation first. Good agents earn better terms." }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "BOB'S ACTIVE LOAN",
+      "description": "If Bob doesn't repay, collateral seized + credit drops",
+      "events": [
+        { "agent": "bob.agent", "action": "active_loan", "amount": "1 USDG", "interest": "10%", "repay": "1.1 USDG",
+          "collateral": "OKB locked in contract", "due_in": "24h",
+          "if_default": "OKB collateral seized, credit score drops from 60" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "SUMMARY",
+      "pool_available": "6 USDG",
+      "credit_scores": { "alice": 80, "bob": 60, "charlie": 20 },
+      "features": ["x402 payments: deposit + repay", "Smart contract: trustless execution", "Credit oracle: on-chain enforcement"]
+    }
+  ],
+
+  "tx_hashes": [
+    { "desc": "Pool contract deploy", "hash": "0xb4e64184416bd9d76884964feb2520c676ab0b0d33aa0c37b10179ed38437056" },
+    { "desc": "Lender deposit (x402)", "hash": "0xb10959a8" },
+    { "desc": "Alice approve USDG", "hash": "0x15e4ddf4" },
+    { "desc": "Alice repay", "hash": "0xdffa0879" },
+    { "desc": "Alice registration", "hash": "0x1201baf93321a00efb55d82c90ac94e054df2d5af876694398afbcab42b0a12c" },
+    { "desc": "Bob registration", "hash": "0x9187e811c6e23602818c6570b684d16f1f0dc174355d23a5b0e25c2bc2b283cd" },
+    { "desc": "Credit seed", "hash": "0xccb79599cb1275475fc8020ee27ca2e62ad83e4429559d3d02dac6463e41aef9" }
+  ]
+}
